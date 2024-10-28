@@ -6,7 +6,7 @@ export class GetUserQueryHandler {
 
     async handle(query: GetUserQuery) {
         const events = await this.eventStore.getEventById(query.payload.userId);
-        
+
         if (!events.length) {
             throw new Error(`User with ID ${query.payload.userId} not found`);
         }
@@ -15,6 +15,7 @@ export class GetUserQueryHandler {
         const user = events.reduce((user, event) => {
             switch (event.type) {
                 case "UserCreated":
+                case "UserUpdated":
                     return {
                         id: event.aggregateId,
                         name: event.payload.name,

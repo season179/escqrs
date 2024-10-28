@@ -9,6 +9,11 @@ export class User extends AggregateRoot {
         this.apply({ name, email });
     }
 
+    update(name: string, email: string): void {
+        this.addEvent('UserUpdated', { name, email });
+        this.apply({ name, email });
+    }
+
     private apply(data: { name: string, email: string }): void {
         this.name = data.name;
         this.email = data.email;
