@@ -1,24 +1,16 @@
-import type { Event, EventHandler } from "./types";
+import { eventHandlers } from "./metadata";
+import type { EventHandler } from "./types";
 
-export const eventHandlers = new Map<string, EventHandler[]>();
-
+/**
+ * Decorator to mark a class as an EventHandler.
+ * @param eventType - The type of event this handler processes.
+ */
 export function EventHandler(eventType: string) {
-    return function (
-        target: any,
-        propertyKey: string,
-        descriptor: PropertyDescriptor
-    ) {
-        const originalMethod = descriptor.value;
-
-        const handler: EventHandler = {
-            handle: async (event: Event) => {
-                await originalMethod.call(target, event);
-            },
-        };
-
+    return function (constructor: new (...args: any[]) => EventHandler) {
+        // Register the handler in the metadata storage
         if (!eventHandlers.has(eventType)) {
             eventHandlers.set(eventType, []);
         }
-        eventHandlers.get(eventType)!.push(handler);
+        eventHandlers.get(eventType)!.push(constructor);
     };
 }

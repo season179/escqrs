@@ -3,16 +3,23 @@ import { ErrorHandlingMiddleware } from "./middleware/ErrorHandlingMiddleware";
 import { ValidationMiddleware } from "./middleware/ValidationMiddleware";
 import type { Command, CommandHandler, CommandMiddleware } from "./types";
 import { CommandHandlerNotFoundError } from "./types";
+import { commandHandlers } from "./metadata";
 
 export class CommandBus {
     private handlers = new Map<string, CommandHandler>();
     private middlewares: CommandMiddleware[] = [];
 
-    constructor() {
+    constructor(
+        private dependencyResolver?: (
+            handlerConstructor: new (...args: any[]) => any
+        ) => any
+    ) {
         // Add default error handling middleware
         this.use(new ErrorHandlingMiddleware());
         // Add default validation middleware
         this.use(new ValidationMiddleware());
+        // Automatically register handlers from decorators
+        this.registerDecoratedHandlers();
     }
 
     /**
@@ -67,5 +74,14 @@ export class CommandBus {
         };
 
         return chain;
+    }
+
+    private registerDecoratedHandlers() {
+        for (const [commandType, handlerConstructor] of commandHandlers) {
+            const handlerInstance = this.dependencyResolver
+                ? this.dependencyResolver(handlerConstructor)
+                : new handlerConstructor();
+            this.register(commandType, handlerInstance);
+        }
     }
 }

@@ -1,20 +1,13 @@
-import type { Command, CommandHandler } from "./types";
+import { commandHandlers } from "./metadata";
+import type { CommandHandler } from "./types";
 
-export const commandHandlers = new Map<string, CommandHandler>();
-
+/**
+ * Decorator to mark a class as a CommandHandler.
+ * @param commandType - The type of command this handler processes.
+ */
 export function CommandHandler(commandType: string) {
-    return function (
-        target: any,
-        propertyKey: string,
-        descriptor: PropertyDescriptor
-    ) {
-        const originalMethod = descriptor.value;
-
-        descriptor.value = async function (command: Command) {
-            return await originalMethod.call(this, command);
-        };
-
-        commandHandlers.set(commandType, descriptor.value);
-        return descriptor;
+    return function (constructor: new (...args: any[]) => CommandHandler) {
+        // Register the handler in the metadata storage
+        commandHandlers.set(commandType, constructor);
     };
 }

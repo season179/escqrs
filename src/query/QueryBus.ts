@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { queryHandlers } from "./metadata";
 import type {
     Query,
     QueryResult,
@@ -10,6 +10,15 @@ import { QueryHandlerNotFoundError } from "./types";
 export class QueryBus {
     private handlers = new Map<string, QueryHandler>();
     private middlewares: QueryMiddleware[] = [];
+
+    constructor(
+        private dependencyResolver?: (
+            handlerConstructor: new (...args: any[]) => any
+        ) => any
+    ) {
+        // Automatically register handlers from decorators
+        this.registerDecoratedHandlers();
+    }
 
     /**
      * Register a query handler for a specific query type
@@ -63,5 +72,14 @@ export class QueryBus {
         };
 
         return chain;
+    }
+
+    private registerDecoratedHandlers() {
+        for (const [queryType, handlerConstructor] of queryHandlers) {
+            const handlerInstance = this.dependencyResolver
+                ? this.dependencyResolver(handlerConstructor)
+                : new handlerConstructor();
+            this.register(queryType, handlerInstance);
+        }
     }
 }

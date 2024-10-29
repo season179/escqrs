@@ -1,3 +1,4 @@
+import { eventHandlers } from "./metadata";
 import type { Event, EventHandler, EventMiddleware } from "./types";
 import { EventHandlerNotFoundError } from "./types";
 import { SubscriptionManager } from "../subscription/SubscriptionManager";
@@ -11,8 +12,15 @@ export class EventBus {
      * Create a new EventBus instance.
      * @param subscriptionManager Optional SubscriptionManager for publishing events to subscribers.
      */
-    constructor(subscriptionManager?: SubscriptionManager) {
+    constructor(
+        subscriptionManager?: SubscriptionManager,
+        private dependencyResolver?: (
+            handlerConstructor: new (...args: any[]) => any
+        ) => any
+    ) {
         this.subscriptionManager = subscriptionManager;
+        // Automatically register handlers from decorators
+        this.registerDecoratedHandlers();
     }
 
     /**
@@ -73,5 +81,16 @@ export class EventBus {
         };
 
         return chain;
+    }
+
+    private registerDecoratedHandlers() {
+        for (const [eventType, handlerConstructors] of eventHandlers) {
+            for (const handlerConstructor of handlerConstructors) {
+                const handlerInstance = this.dependencyResolver
+                    ? this.dependencyResolver(handlerConstructor)
+                    : new handlerConstructor();
+                this.register(eventType, handlerInstance);
+            }
+        }
     }
 }
