@@ -1,11 +1,14 @@
 import type { DatabaseAdapter, QueryResult } from "../persistence/types";
 import type { EventData, EventStoreOptions, EventStreamOptions } from "./types";
+import type { AggregateRoot } from "../aggregate/AggregateRoot";
+import { EventBus } from "./EventBus";
 
 export class EventStore {
     private readonly tableName = "events";
 
     constructor(
         private readonly db: DatabaseAdapter,
+        private readonly eventBus: EventBus,
         private readonly options: EventStoreOptions = {}
     ) {}
 
@@ -144,5 +147,38 @@ export class EventStore {
             metadata: JSON.parse(row.metadata),
             timestamp: new Date(row.timestamp),
         }));
+    }
+
+    /**
+     * Save the aggregate's uncommitted events and publish them
+     */
+    async save<T extends AggregateRoot>(aggregate: T): Promise<void> {
+        const events = aggregate.getUncommittedEvents();
+
+        if (!events.length) return;
+
+        await this.appendToStream(events);
+
+        // Publish events to the event bus
+        for (const event of events) {
+            await this.eventBus.publish(event);
+        }
+
+        aggregate.clearUncommittedEvents();
+    }
+
+    /**
+     * Load an aggregate by its ID
+     */
+    async load<T extends AggregateRoot>(
+        aggregateType: { new (id: string): T },
+        aggregateId: string
+    ): Promise<T> {
+        const aggregate = new aggregateType(aggregateId);
+        const events = await this.getEventStream(aggregateId);
+
+        aggregate.loadFromHistory(events);
+
+        return aggregate;
     }
 }
