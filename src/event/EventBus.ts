@@ -1,9 +1,19 @@
 import type { Event, EventHandler, EventMiddleware } from "./types";
 import { EventHandlerNotFoundError } from "./types";
+import { SubscriptionManager } from "../subscription/SubscriptionManager";
 
 export class EventBus {
     private handlers = new Map<string, EventHandler[]>();
     private middlewares: EventMiddleware[] = [];
+    private subscriptionManager?: SubscriptionManager;
+
+    /**
+     * Create a new EventBus instance.
+     * @param subscriptionManager Optional SubscriptionManager for publishing events to subscribers.
+     */
+    constructor(subscriptionManager?: SubscriptionManager) {
+        this.subscriptionManager = subscriptionManager;
+    }
 
     /**
      * Register an event handler for a specific event type
@@ -29,9 +39,16 @@ export class EventBus {
      * Publish an event to all registered handlers
      */
     async publish(event: Event): Promise<void> {
-        const handlers = this.handlers.get(event.type);
-        if (!handlers || handlers.length === 0) {
-            throw new EventHandlerNotFoundError(event.type);
+        const handlers = this.handlers.get(event.type) || [];
+
+        // Publish the event to subscribers via SubscriptionManager
+        if (this.subscriptionManager) {
+            this.subscriptionManager.publish(event.type, event);
+        }
+
+        // It's acceptable if there are no event handlers; events can still be published
+        if (handlers.length === 0) {
+            return;
         }
 
         for (const handler of handlers) {
