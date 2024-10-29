@@ -1,11 +1,21 @@
 import type { Event } from "../event/types";
+import type { Snapshot } from "../snapshot/types";
 
 export abstract class AggregateRoot {
+    protected _id: string;
     private _uncommittedEvents: Event[] = [];
     private _version = 0;
 
+    constructor(id: string) {
+        this._id = id;
+    }
+
     get version(): number {
         return this._version;
+    }
+
+    get id(): string {
+        return this._id;
     }
 
     /**
@@ -27,7 +37,13 @@ export abstract class AggregateRoot {
     /**
      * Load events to rebuild the aggregate state
      */
-    loadFromHistory(events: Event[]): void {
+    loadFromHistory(events: Event[], snapshot?: Snapshot): void {
+        if (snapshot) {
+            // Load state from snapshot
+            Object.assign(this, snapshot.state);
+            this._version = snapshot.version;
+        }
+
         for (const event of events) {
             this.apply(event, false);
         }
@@ -46,4 +62,6 @@ export abstract class AggregateRoot {
     clearUncommittedEvents(): void {
         this._uncommittedEvents = [];
     }
+
+    abstract getState(): any;
 }

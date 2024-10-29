@@ -2,18 +2,28 @@ import type { DatabaseAdapter, QueryResult } from "../persistence/types";
 import type { EventData, EventStoreOptions, EventStreamOptions } from "./types";
 import type { AggregateRoot } from "../aggregate/AggregateRoot";
 import { EventBus } from "./EventBus";
+import { SnapshotManager } from "../snapshot/SnapshotManager";
+import type { Snapshot } from "../snapshot/types";
 
 export class EventStore {
     private readonly tableName = "events";
+    private snapshotManager: SnapshotManager;
+    private snapshotFrequency: number;
 
     constructor(
         private readonly db: DatabaseAdapter,
         private readonly eventBus: EventBus,
         private readonly options: EventStoreOptions = {}
-    ) {}
+    ) {
+        this.snapshotFrequency = options.snapshotFrequency || 100;
+        this.snapshotManager = new SnapshotManager(db, {
+            snapshotThreshold: this.snapshotFrequency,
+        });
+    }
 
     async initialize(): Promise<void> {
         await this.createSchema();
+        await this.snapshotManager.initialize();
     }
 
     private async createSchema(): Promise<void> {
@@ -164,6 +174,11 @@ export class EventStore {
             await this.eventBus.publish(event);
         }
 
+        // Create a snapshot if necessary
+        if (aggregate.version % this.snapshotFrequency === 0) {
+            await this.createSnapshot(aggregate);
+        }
+
         aggregate.clearUncommittedEvents();
     }
 
@@ -174,11 +189,45 @@ export class EventStore {
         aggregateType: { new (id: string): T },
         aggregateId: string
     ): Promise<T> {
+        // Retrieve the latest snapshot
+        const snapshot = await this.snapshotManager.getLatestSnapshot(
+            aggregateId
+        );
+        let fromVersion = 0;
+
         const aggregate = new aggregateType(aggregateId);
+        if (snapshot) {
+            fromVersion = snapshot.version + 1;
+        }
+
         const events = await this.getEventStream(aggregateId);
 
-        aggregate.loadFromHistory(events);
+        aggregate.loadFromHistory(events, snapshot);
 
         return aggregate;
+    }
+
+    private async createSnapshot<T extends AggregateRoot>(
+        aggregate: T
+    ): Promise<void> {
+        const snapshot: Snapshot = {
+            id: aggregate.id,
+            aggregateId: aggregate.id,
+            aggregateType: aggregate.constructor.name,
+            version: aggregate.version,
+            state: aggregate.getState(),
+            createdAt: new Date(),
+        };
+
+        await this.snapshotManager.saveSnapshot(snapshot);
+
+        // Prune old snapshots
+        const pruneVersion = aggregate.version - this.snapshotFrequency * 2;
+        if (pruneVersion > 0) {
+            await this.snapshotManager.deleteSnapshotsBeforeVersion(
+                aggregate.id,
+                pruneVersion
+            );
+        }
     }
 }
