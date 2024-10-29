@@ -8,14 +8,29 @@ class SQLiteTransaction implements Transaction {
     async execute(query: string, params?: any[]): Promise<QueryResult> {
         try {
             const stmt = this.db.prepare(query);
-            const result = params ? stmt.all(...params) : stmt.all();
+            console.log("SQLiteTransaction.execute", query, params);
+            // Using .run() for mutations and .all() for queries
+            // Ensure params are primitive values that SQLite can handle
+            const sanitizedParams = params?.map((param) => {
+                if (param === undefined) return null;
+                if (typeof param === "object" && param !== null) {
+                    return JSON.stringify(param);
+                }
+                return param;
+            });
+
+            const result = params
+                ? query.trim().toUpperCase().startsWith("SELECT")
+                    ? stmt.all(...sanitizedParams ?? [])
+                    : stmt.run(...sanitizedParams ?? [])
+                : stmt.all();
+
             return {
-                rows: result,
-                rowCount: result.length,
+                rows: Array.isArray(result) ? result : [result],
+                rowCount: Array.isArray(result) ? result.length : 1,
             };
         } catch (error) {
-            await this.rollback();
-            throw error;
+            throw error; // Remove rollback here as it's handled by the transaction wrapper
         }
     }
 
@@ -60,14 +75,36 @@ export class SQLiteAdapter extends BaseAdapter {
 
         try {
             const stmt = this.db.prepare(query);
-            const result = params ? stmt.all(...params) : stmt.all();
+            // Using .run() for mutations and .all() for queries
+            const result = params
+                ? query.trim().toUpperCase().startsWith("SELECT")
+                    ? stmt.all(...params)
+                    : stmt.run(...params)
+                : stmt.all();
+
             return {
-                rows: result,
-                rowCount: result.length,
+                rows: Array.isArray(result) ? result : [result],
+                rowCount: Array.isArray(result) ? result.length : 1,
             };
         } catch (error) {
             throw this.formatError(error);
         }
+    }
+
+    async commit(): Promise<void> {
+        if (!this.db) {
+            throw new Error("Database not connected");
+        }
+
+        this.db.exec("COMMIT");
+    }
+
+    async rollback(): Promise<void> {
+        if (!this.db) {
+            throw new Error("Database not connected");
+        }
+
+        this.db.exec("ROLLBACK");
     }
 
     async transaction<T>(
@@ -78,13 +115,21 @@ export class SQLiteAdapter extends BaseAdapter {
         }
 
         try {
-            this.db.exec("BEGIN TRANSACTION");
+            this.db.exec("BEGIN TRANSACTION"); // Changed to match working example
             const transaction = new SQLiteTransaction(this.db);
             const result = await fn(transaction);
-            await transaction.commit();
+            this.db.exec("COMMIT");
             return result;
         } catch (error) {
-            this.db.exec("ROLLBACK");
+            try {
+                this.db.exec("ROLLBACK");
+            } catch (rollbackError) {
+                // Only throw if it's not already rolled back
+                // if (!rollbackError.message.includes("no transaction is active")) {
+                //     throw this.formatError(rollbackError);
+                // }
+                throw this.formatError(rollbackError);
+            }
             throw this.formatError(error);
         }
     }

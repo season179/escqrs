@@ -16,6 +16,7 @@ export abstract class BaseAdapter implements DatabaseAdapter {
     ): Promise<T>;
 
     protected formatError(error: any): Error {
-        return new Error(`Database error: ${error.message}`);
+        console.log(error);
+        return new Error(`Database error: ${error}`);
     }
 }

@@ -17,7 +17,7 @@ export class QueryBus {
         ) => any
     ) {
         // Automatically register handlers from decorators
-        this.registerDecoratedHandlers();
+        // this.registerDecoratedHandlers();
     }
 
     /**
@@ -28,11 +28,16 @@ export class QueryBus {
         handler: QueryHandler<T>
     ): void {
         if (this.handlers.has(queryType)) {
-            throw new Error(
+            // throw new Error(
+            //     `Handler already registered for query type: ${queryType}`
+            // );
+            console.warn(
                 `Handler already registered for query type: ${queryType}`
             );
+            return;
         }
         this.handlers.set(queryType, handler);
+        console.log(`Registered handler for query type: ${queryType}`);
     }
 
     /**

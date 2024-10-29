@@ -19,7 +19,7 @@ export class CommandBus {
         // Add default validation middleware
         this.use(new ValidationMiddleware());
         // Automatically register handlers from decorators
-        this.registerDecoratedHandlers();
+        // this.registerDecoratedHandlers();
     }
 
     /**
@@ -30,11 +30,16 @@ export class CommandBus {
         handler: CommandHandler<T>
     ): void {
         if (this.handlers.has(commandType)) {
-            throw new Error(
+            // throw new Error(
+            //     `Handler already registered for command type: ${commandType}`
+            // );
+            console.warn(
                 `Handler already registered for command type: ${commandType}`
             );
+            return;
         }
         this.handlers.set(commandType, handler);
+        console.log(`Registered handler for command type: ${commandType}`);
     }
 
     /**
@@ -76,12 +81,12 @@ export class CommandBus {
         return chain;
     }
 
-    private registerDecoratedHandlers() {
-        for (const [commandType, handlerConstructor] of commandHandlers) {
-            const handlerInstance = this.dependencyResolver
-                ? this.dependencyResolver(handlerConstructor)
-                : new handlerConstructor();
-            this.register(commandType, handlerInstance);
-        }
-    }
+    // private registerDecoratedHandlers() {
+    //     for (const [commandType, handlerConstructor] of commandHandlers) {
+    //         const handlerInstance = this.dependencyResolver
+    //             ? this.dependencyResolver(handlerConstructor)
+    //             : new handlerConstructor();
+    //         this.register(commandType, handlerInstance);
+    //     }
+    // }
 }

@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import express from "express";
 import { nanoid } from "nanoid";
 import { DatabaseFactory } from "./persistence";
 import { EventStore } from "./event";
@@ -13,7 +13,8 @@ import {
 } from "./domain/user/commandHandlers";
 import { GetUserHandler } from "./domain/user/queryHandlers";
 
-const fastify = Fastify({ logger: true });
+const app = express();
+app.use(express.json());
 
 async function startServer() {
     // Initialise SQLite database
@@ -34,7 +35,6 @@ async function startServer() {
     const queryGateway = new QueryGateway(queryBus);
 
     // Register command handlers
-    console.log(eventStore);
     commandBus.register("CreateUser", new CreateUserHandler(eventStore));
     commandBus.register(
         "UpdateUserProfile",
@@ -48,39 +48,75 @@ async function startServer() {
     // Register query handlers
     queryBus.register("GetUser", new GetUserHandler(eventStore));
 
-    // Start the server
-    try {
-        await fastify.listen({ port: 3000, host: "0.0.0.0" });
-        fastify.log.info(`Server listening on http://localhost:3000`);
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
-
     // Endpoint to create a new user
-    fastify.post("/users", async (request, reply) => {
-        const { email, name } = request.body as { email: string; name: string };
-        const userId = nanoid();
-        await commandGateway.send("CreateUser", { id: userId, email, name });
-        reply.send({ id: userId });
+    app.post("/users", async (req, res) => {
+        try {
+            const { email, name } = req.body;
+            const userId = nanoid();
+            await commandGateway.send("CreateUser", {
+                id: userId,
+                email,
+                name,
+            });
+            res.json({ id: userId });
+        } catch (error) {
+            res.status(500).json({ error: "Internal server error" });
+        }
+    });
+
+    app.get("/users", async (req, res) => {
+        res.json({ id: "hello" });
+    });
+
+    // Endpoint to get a user by id
+    // FIXME: Give the res a proper type
+    app.get("/users/:id", async (req, res: any) => {
+        try {
+            const { id } = req.params;
+            const user = await queryGateway.ask("GetUser", { id });
+
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            res.json(user);
+        } catch (error) {
+            res.status(500).json({ error: "Internal server error" });
+        }
     });
 
     // Endpoint to update a user by id
-    fastify.put("/users/:id", async (request, reply) => {
-        const { id } = request.params as { id: string };
-        const { name } = request.body as { name: string };
-        await commandGateway.send("UpdateUserProfile", { id, name });
-        reply.send({ status: "User updated" });
+    app.put("/users/:id", async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { name } = req.body;
+            await commandGateway.send("UpdateUserProfile", { id, name });
+            res.json({ status: "User updated" });
+        } catch (error) {
+            res.status(500).json({ error: "Internal server error" });
+        }
     });
 
     // Endpoint to deactivate a user by id
-    fastify.delete("/users/:id", async (request, reply) => {
-        const { id } = request.params as { id: string };
-        await commandGateway.send("DeactivateUser", { id });
-        reply.send({ status: "User deactivated" });
+    app.delete("/users/:id", async (req, res) => {
+        try {
+            const { id } = req.params;
+            await commandGateway.send("DeactivateUser", { id });
+            res.json({ status: "User deactivated" });
+        } catch (error) {
+            res.status(500).json({ error: "Internal server error" });
+        }
     });
 
-    
+    // Start the server
+    try {
+        app.listen(3000, "0.0.0.0", () => {
+            console.log(`Server listening on http://localhost:3000`);
+        });
+    } catch (err) {
+        console.error(err);
+        process.exit(1);
+    }
 }
 
 startServer();

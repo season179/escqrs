@@ -163,6 +163,7 @@ export class EventStore {
      * Save the aggregate's uncommitted events and publish them
      */
     async save<T extends AggregateRoot>(aggregate: T): Promise<void> {
+        console.log("Saving aggregate", aggregate.id);
         const events = aggregate.getUncommittedEvents();
 
         if (!events.length) return;
