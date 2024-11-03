@@ -1,10 +1,13 @@
-// src/index.ts
+import "./config/env.config";
+import { initializeContainer } from "./config/container.config";
 import Fastify from "fastify";
-import "./config/tsyringe.config";
 import { accountRoutes } from "./api/routes/accounts";
 import { queryRoutes } from "./api/routes/queries";
 import { adminRoutes } from "./api/routes/admin";
 import { metricsRoutes } from "./api/routes/metrics";
+
+// Initialize the container
+initializeContainer();
 
 const fastify = Fastify({
     logger: true,

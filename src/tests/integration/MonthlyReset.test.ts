@@ -1,6 +1,6 @@
 // src/tests/integration/MonthlyReset.test.ts
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { container } from "tsyringe";
+import { ServiceContainer } from "../../core/container/ServiceContainer";
 import { Database } from "../../infrastructure/Database";
 import { CommandBus } from "../../core/command/CommandBus";
 import { EventBus } from "../../core/event/EventBus";
@@ -16,6 +16,7 @@ describe("Monthly Reset Integration", () => {
     let queryBus: QueryBus;
 
     beforeAll(async () => {
+        const container = ServiceContainer.getInstance();
         database = container.resolve<Database>("Database");
         commandBus = container.resolve<CommandBus>("CommandBus");
         eventBus = container.resolve<EventBus>("EventBus");

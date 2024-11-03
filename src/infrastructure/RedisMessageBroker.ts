@@ -1,5 +1,4 @@
 // src/infrastructure/RedisMessageBroker.ts
-import { injectable } from "tsyringe";
 import { Redis } from "ioredis";
 import { env } from "../config/env.config";
 import type { Command } from "../core/command/Command";
@@ -8,7 +7,6 @@ import type { Query } from "../core/query/Query";
 
 type Message = Command | Event | Query | unknown;
 
-@injectable()
 export class RedisMessageBroker {
     private publisher: Redis;
     private subscriber: Redis;

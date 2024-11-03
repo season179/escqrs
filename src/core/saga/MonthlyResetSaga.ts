@@ -1,5 +1,4 @@
 // src/core/saga/MonthlyResetSaga.ts
-import { inject, injectable } from "tsyringe";
 import type { CommandBus } from "../command/CommandBus";
 import type { EventBus } from "../event/EventBus";
 import type { Event } from "../event/Event";
@@ -8,13 +7,12 @@ import type { Database } from "../../infrastructure/Database";
 import type { SagaManager } from "./SagaManager";
 import { SagaStatus } from "./Saga";
 
-@injectable()
 export class MonthlyResetSaga {
     constructor(
-        @inject("CommandBus") private commandBus: CommandBus,
-        @inject("EventBus") private eventBus: EventBus,
-        @inject("SagaManager") private sagaManager: SagaManager,
-        @inject("Database") private db: Database
+        private commandBus: CommandBus,
+        private eventBus: EventBus,
+        private sagaManager: SagaManager,
+        private db: Database
     ) {
         this.setupEventHandlers();
     }

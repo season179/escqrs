@@ -1,12 +1,10 @@
 // src/core/query/handlers/GetAccountBalanceQueryHandler.ts
-import { inject, injectable } from "tsyringe";
 import type { QueryHandler } from "../QueryHandler";
 import type { GetAccountBalanceQuery } from "../queries/GetAccountBalanceQuery";
 import type { Database } from "../../../infrastructure/Database";
 
-@injectable()
 export class GetAccountBalanceQueryHandler implements QueryHandler {
-    constructor(@inject("Database") private db: Database) {}
+    constructor(private db: Database) {}
 
     async handle(query: GetAccountBalanceQuery): Promise<{ balance: number }> {
         const result = await this.db.query(

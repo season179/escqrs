@@ -1,13 +1,11 @@
 // src/core/saga/SagaManager.ts
-import { inject, injectable } from "tsyringe";
 import { nanoid } from "nanoid";
 import type { Database } from "../../infrastructure/Database";
 import type { Saga } from "./Saga";
 import { SagaStatus } from "./Saga";
 
-@injectable()
 export class SagaManager {
-    constructor(@inject("Database") private db: Database) {
+    constructor(private db: Database) {
         this.initialize();
     }
 

@@ -1,10 +1,8 @@
 // src/infrastructure/Database.ts
-import { injectable } from "tsyringe";
 import { Pool } from "pg";
 import type { QueryResult } from "pg";
 import { env } from "../config/env.config";
 
-@injectable()
 export class Database {
     private pool: Pool;
 

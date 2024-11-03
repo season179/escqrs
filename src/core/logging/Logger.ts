@@ -1,8 +1,6 @@
 // src/core/logging/Logger.ts
-import { injectable } from "tsyringe";
 import pino from "pino";
 
-@injectable()
 export class Logger {
     private logger: pino.Logger;
 

@@ -1,18 +1,16 @@
 // src/core/query/QueryBus.ts
-import { inject, injectable } from "tsyringe";
 import { nanoid } from "nanoid";
 import type { Query } from "./Query";
 import type { QueryHandler } from "./QueryHandler";
 import type { RedisMessageBroker } from "../../infrastructure/RedisMessageBroker";
 
-@injectable()
 export class QueryBus {
     private handlers = new Map<string, QueryHandler>();
     private readonly QUERY_CHANNEL = "queries";
     private readonly RESPONSE_CHANNEL_PREFIX = "query_response:";
 
     constructor(
-        @inject("MessageBroker") private messageBroker: RedisMessageBroker
+        private messageBroker: RedisMessageBroker
     ) {
         this.setupQuerySubscription();
     }

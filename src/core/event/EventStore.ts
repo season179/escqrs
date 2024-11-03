@@ -1,11 +1,9 @@
 // src/core/event/EventStore.ts
-import { inject, injectable } from "tsyringe";
 import type { Database } from "../../infrastructure/Database";
 import type { Event } from "./Event";
 
-@injectable()
 export class EventStore {
-    constructor(@inject("Database") private db: Database) {}
+    constructor(private db: Database) {}
 
     async save(event: Event): Promise<void> {
         await this.db.query(

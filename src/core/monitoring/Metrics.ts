@@ -1,37 +1,35 @@
 // src/core/monitoring/Metrics.ts
-import { injectable } from "tsyringe";
-import prometheus from "prom-client";
+import { Registry, Counter, Histogram } from "prom-client";
 
-@injectable()
 export class Metrics {
-    private readonly registry: prometheus.Registry;
-    private readonly commandCounter: prometheus.Counter;
-    private readonly queryCounter: prometheus.Counter;
-    private readonly eventCounter: prometheus.Counter;
-    private readonly operationDuration: prometheus.Histogram;
+    private readonly registry: Registry;
+    private readonly commandCounter: Counter;
+    private readonly queryCounter: Counter;
+    private readonly eventCounter: Counter;
+    private readonly operationDuration: Histogram;
 
     constructor() {
-        this.registry = new prometheus.Registry();
+        this.registry = new Registry();
 
-        this.commandCounter = new prometheus.Counter({
+        this.commandCounter = new Counter({
             name: "earnwage_commands_total",
             help: "Total number of commands processed",
             labelNames: ["type", "status"],
         });
 
-        this.queryCounter = new prometheus.Counter({
+        this.queryCounter = new Counter({
             name: "earnwage_queries_total",
             help: "Total number of queries processed",
             labelNames: ["type"],
         });
 
-        this.eventCounter = new prometheus.Counter({
+        this.eventCounter = new Counter({
             name: "earnwage_events_total",
             help: "Total number of events processed",
             labelNames: ["type"],
         });
 
-        this.operationDuration = new prometheus.Histogram({
+        this.operationDuration = new Histogram({
             name: "earnwage_operation_duration_seconds",
             help: "Duration of operations",
             labelNames: ["operation"],

@@ -1,9 +1,10 @@
 // src/api/routes/metrics.ts
 import type { FastifyInstance } from "fastify";
-import { container } from "tsyringe";
+import { ServiceContainer } from "../../core/container/ServiceContainer";
 import { Metrics } from "../../core/monitoring/Metrics";
 
 export async function metricsRoutes(fastify: FastifyInstance): Promise<void> {
+    const container = ServiceContainer.getInstance();
     const metrics = container.resolve<Metrics>("Metrics");
 
     fastify.get("/metrics", async (request, reply) => {

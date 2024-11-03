@@ -1,12 +1,10 @@
 // src/core/query/handlers/GetTransactionHistoryQueryHandler.ts
-import { inject, injectable } from "tsyringe";
 import type { QueryHandler } from "../QueryHandler";
 import type { GetTransactionHistoryQuery } from "../queries/GetTransactionHistoryQuery";
 import type { Database } from "../../../infrastructure/Database";
 
-@injectable()
 export class GetTransactionHistoryQueryHandler implements QueryHandler {
-    constructor(@inject("Database") private db: Database) {}
+    constructor(private db: Database) {}
 
     async handle(query: GetTransactionHistoryQuery): Promise<{
         transactions: Array<{

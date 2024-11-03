@@ -1,5 +1,4 @@
 // src/core/command/handlers/WithdrawCreditCommandHandler.ts
-import { injectable, inject } from "tsyringe";
 import type { CommandHandler } from "../CommandHandler";
 import type { WithdrawCreditCommand } from "../commands/WithdrawCreditCommand";
 import { EarnWageAccountAggregate } from "../../domain/EarnWageAccountAggregate";
@@ -7,11 +6,10 @@ import type { EventStore } from "../../event/EventStore";
 import type { EventBus } from "../../event/EventBus";
 import { DomainError } from "../../errors/DomainError";
 
-@injectable()
 export class WithdrawCreditCommandHandler implements CommandHandler {
     constructor(
-        @inject("EventStore") private eventStore: EventStore,
-        @inject("EventBus") private eventBus: EventBus
+        private eventStore: EventStore,
+        private eventBus: EventBus
     ) {}
 
     async handle(command: WithdrawCreditCommand): Promise<void> {

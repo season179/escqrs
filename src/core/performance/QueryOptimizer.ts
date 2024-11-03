@@ -1,13 +1,11 @@
 // src/core/performance/QueryOptimizer.ts
-import { inject, injectable } from "tsyringe";
 import type { Database } from "../../infrastructure/Database";
 
-@injectable()
 export class QueryOptimizer {
     private readonly CACHE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
     private cache = new Map<string, { data: unknown; timestamp: number }>();
 
-    constructor(@inject("Database") private db: Database) {}
+    constructor(private db: Database) {}
 
     async optimizeQuery<T>(
         key: string,

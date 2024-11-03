@@ -1,5 +1,5 @@
 // src/tests/load/k6/scenarios/event-sourcing-performance.ts
-import http from "k6/http";
+import { post, get } from "k6/http";
 import { check, sleep } from "k6";
 import { BASE_URL, DURATION_SECONDS, VIRTUAL_USERS } from "../config";
 
@@ -24,7 +24,7 @@ export default function () {
     // Perform multiple operations to generate events
     for (let i = 0; i < 5; i++) {
         // Grant credit
-        const grantResponse = http.post(
+        const grantResponse = post(
             `${BASE_URL}/accounts/${ebid}/credits`,
             JSON.stringify({ amount: 100 }),
             { headers: { "Content-Type": "application/json" } }
@@ -37,7 +37,7 @@ export default function () {
         sleep(0.1);
 
         // Withdraw credit
-        const withdrawResponse = http.post(
+        const withdrawResponse = post(
             `${BASE_URL}/accounts/${ebid}/withdrawals`,
             JSON.stringify({ amount: 50 }),
             { headers: { "Content-Type": "application/json" } }
@@ -51,7 +51,7 @@ export default function () {
     }
 
     // Check final balance to verify event replay
-    const balanceResponse = http.get(`${BASE_URL}/accounts/${ebid}/balance`);
+    const balanceResponse = get(`${BASE_URL}/accounts/${ebid}/balance`);
 
     check(balanceResponse, {
         "balance query status is 200": (r) => r.status === 200,

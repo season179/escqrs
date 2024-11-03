@@ -1,10 +1,11 @@
 // src/api/routes/admin.ts
 import type { FastifyInstance } from "fastify";
-import { container } from "tsyringe";
+import { ServiceContainer } from "../../core/container/ServiceContainer";
 import type { EventBus } from "../../core/event/EventBus";
 import { nanoid } from "nanoid";
 
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
+    const container = ServiceContainer.getInstance();
     const eventBus = container.resolve<EventBus>("EventBus");
 
     fastify.post("/admin/monthly-reset", async (request, reply) => {

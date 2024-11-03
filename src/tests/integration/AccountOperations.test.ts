@@ -1,6 +1,6 @@
 // src/tests/integration/AccountOperations.test.ts
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { container } from "tsyringe";
+import { ServiceContainer } from "../../core/container/ServiceContainer";
 import { Database } from "../../infrastructure/Database";
 import { CommandBus } from "../../core/command/CommandBus";
 import { QueryBus } from "../../core/query/QueryBus";
@@ -14,6 +14,7 @@ describe("Account Operations Integration", () => {
     let queryBus: QueryBus;
 
     beforeAll(async () => {
+        const container = ServiceContainer.getInstance();
         database = container.resolve<Database>("Database");
         commandBus = container.resolve<CommandBus>("CommandBus");
         queryBus = container.resolve<QueryBus>("QueryBus");

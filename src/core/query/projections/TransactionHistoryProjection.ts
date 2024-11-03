@@ -1,12 +1,10 @@
 // src/core/query/projections/TransactionHistoryProjection.ts
-import { inject, injectable } from "tsyringe";
 import type { Event } from "../../event/Event";
 import type { EventHandler } from "../../event/EventHandler";
 import type { Database } from "../../../infrastructure/Database";
 
-@injectable()
 export class TransactionHistoryProjection implements EventHandler {
-    constructor(@inject("Database") private db: Database) {
+    constructor(private db: Database) {
         this.initialize();
     }
 

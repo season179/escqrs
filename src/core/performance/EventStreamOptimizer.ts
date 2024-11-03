@@ -1,12 +1,9 @@
 // src/core/performance/EventStreamOptimizer.ts
-import { inject, injectable } from "tsyringe";
 import type { Database } from "../../infrastructure/Database";
-import type { Event } from "../event/Event";
 import { nanoid } from "nanoid";
 
-@injectable()
 export class EventStreamOptimizer {
-    constructor(@inject("Database") private db: Database) {}
+    constructor(private db: Database) {}
 
     async createSnapshot(
         aggregateId: string,

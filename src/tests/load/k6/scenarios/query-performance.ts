@@ -1,5 +1,5 @@
 // src/tests/load/k6/scenarios/query-performance.ts
-import http from "k6/http";
+import { post, get } from "k6/http";
 import { check, sleep } from "k6";
 import { BASE_URL, DURATION_SECONDS, VIRTUAL_USERS } from "../config";
 
@@ -21,7 +21,7 @@ export default function () {
     const ebid = `emp_${Math.floor(Math.random() * 100)}`; // Use smaller pool for more cache hits
 
     // Get balance
-    const balanceResponse = http.get(`${BASE_URL}/accounts/${ebid}/balance`);
+    const balanceResponse = get(`${BASE_URL}/accounts/${ebid}/balance`);
 
     check(balanceResponse, {
         "balance query status is 200": (r) => r.status === 200,
@@ -30,7 +30,7 @@ export default function () {
     sleep(0.5);
 
     // Get transaction history
-    const historyResponse = http.get(
+    const historyResponse = get(
         `${BASE_URL}/accounts/${ebid}/transactions?page=1&limit=10`
     );
 

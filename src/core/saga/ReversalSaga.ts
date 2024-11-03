@@ -1,5 +1,4 @@
 // src/core/saga/ReversalSaga.ts
-import { inject, injectable } from "tsyringe";
 import type { CommandBus } from "../command/CommandBus";
 import type { EventBus } from "../event/EventBus";
 import type { Event } from "../event/Event";
@@ -7,12 +6,11 @@ import type { EventHandler } from "../event/EventHandler";
 import type { SagaManager } from "./SagaManager";
 import { SagaStatus } from "./Saga";
 
-@injectable()
 export class ReversalSaga {
     constructor(
-        @inject("CommandBus") private commandBus: CommandBus,
-        @inject("EventBus") private eventBus: EventBus,
-        @inject("SagaManager") private sagaManager: SagaManager
+        private commandBus: CommandBus,
+        private eventBus: EventBus,
+        private sagaManager: SagaManager
     ) {
         this.setupEventHandlers();
     }

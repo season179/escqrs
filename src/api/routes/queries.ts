@@ -1,9 +1,10 @@
 // src/api/routes/queries.ts
 import type { FastifyInstance } from "fastify";
-import { container } from "tsyringe";
+import { ServiceContainer } from "../../core/container/ServiceContainer";
 import type { QueryBus } from "../../core/query/QueryBus";
 
 export async function queryRoutes(fastify: FastifyInstance): Promise<void> {
+    const container = ServiceContainer.getInstance();
     const queryBus = container.resolve<QueryBus>("QueryBus");
 
     fastify.get<{ Params: { ebid: string } }>(

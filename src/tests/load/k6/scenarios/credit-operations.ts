@@ -1,5 +1,5 @@
 // src/tests/load/k6/scenarios/credit-operations.ts
-import http from "k6/http";
+import { post, get } from "k6/http";
 import type { Response } from "k6/http";
 import { check, sleep } from "k6";
 import { BASE_URL, VIRTUAL_USERS } from "../config";
@@ -31,7 +31,7 @@ const generateTestData = () => ({
 export default function () {
     const testData = generateTestData();
 
-    const grantResponse = http.post(
+    const grantResponse = post(
         `${BASE_URL}/accounts/${testData.ebid}/credits`,
         JSON.stringify({ amount: testData.amount }),
         { headers: { "Content-Type": "application/json" } }
@@ -44,7 +44,7 @@ export default function () {
 
     sleep(1);
 
-    const balanceResponse = http.get(
+    const balanceResponse = get(
         `${BASE_URL}/accounts/${testData.ebid}/balance`
     );
 
@@ -59,7 +59,7 @@ export default function () {
     sleep(1);
 
     const withdrawAmount = Math.floor(testData.amount / 2);
-    const withdrawResponse = http.post(
+    const withdrawResponse = post(
         `${BASE_URL}/accounts/${testData.ebid}/withdrawals`,
         JSON.stringify({ amount: withdrawAmount }),
         { headers: { "Content-Type": "application/json" } }
