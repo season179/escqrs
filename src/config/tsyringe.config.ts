@@ -18,6 +18,8 @@ import { ReversalSaga } from "../core/saga/ReversalSaga";
 import { MonthlyResetSaga } from "../core/saga/MonthlyResetSaga";
 import { ProcessReversalCommandHandler } from "../core/command/handlers/ProcessReversalCommandHandler";
 import { ResetAccountCommandHandler } from "../core/command/handlers/ResetAccountCommandHandler";
+import { EventStreamOptimizer } from "../core/performance/EventStreamOptimizer";
+import { QueryOptimizer } from "../core/performance/QueryOptimizer";
 
 container.register("Database", Database);
 container.register("MessageBroker", RedisMessageBroker);
@@ -51,3 +53,5 @@ container.register(
     ProcessReversalCommandHandler
 );
 container.register("ResetAccountCommandHandler", ResetAccountCommandHandler);
+container.register("EventStreamOptimizer", EventStreamOptimizer);
+container.register("QueryOptimizer", QueryOptimizer);
