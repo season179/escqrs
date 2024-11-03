@@ -20,6 +20,8 @@ import { ProcessReversalCommandHandler } from "../core/command/handlers/ProcessR
 import { ResetAccountCommandHandler } from "../core/command/handlers/ResetAccountCommandHandler";
 import { EventStreamOptimizer } from "../core/performance/EventStreamOptimizer";
 import { QueryOptimizer } from "../core/performance/QueryOptimizer";
+import { Logger } from "../core/logging/Logger";
+import { Metrics } from "../core/monitoring/Metrics";
 
 container.register("Database", Database);
 container.register("MessageBroker", RedisMessageBroker);
@@ -55,3 +57,5 @@ container.register(
 container.register("ResetAccountCommandHandler", ResetAccountCommandHandler);
 container.register("EventStreamOptimizer", EventStreamOptimizer);
 container.register("QueryOptimizer", QueryOptimizer);
+container.register("Logger", Logger);
+container.register("Metrics", Metrics);
