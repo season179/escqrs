@@ -54,6 +54,31 @@ export class EarnWageAccountAggregate {
         };
     }
 
+    processReversal(transactionId: string, amount: number): Event {
+        return {
+            id: nanoid(),
+            type: "REVERSAL_PROCESSED",
+            aggregateId: this.id,
+            ebid: this.ebid,
+            version: this.version + 1,
+            timestamp: new Date(),
+            payload: { transactionId, amount },
+            metadata: { originalBalance: this.balance },
+        };
+    }
+
+    resetAccount(): Event {
+        return {
+            id: nanoid(),
+            type: "ACCOUNT_RESET",
+            aggregateId: this.id,
+            ebid: this.ebid,
+            version: this.version + 1,
+            timestamp: new Date(),
+            payload: { previousBalance: this.balance },
+        };
+    }
+
     getId(): string {
         return this.id;
     }

@@ -13,6 +13,11 @@ import { GetAccountBalanceQueryHandler } from "../core/query/handlers/GetAccount
 import { GetTransactionHistoryQueryHandler } from "../core/query/handlers/GetTransactionHistoryQueryHandler";
 import { AccountBalanceProjection } from "../core/query/projections/AccountBalanceProjection";
 import { TransactionHistoryProjection } from "../core/query/projections/TransactionHistoryProjection";
+import { SagaManager } from "../core/saga/SagaManager";
+import { ReversalSaga } from "../core/saga/ReversalSaga";
+import { MonthlyResetSaga } from "../core/saga/MonthlyResetSaga";
+import { ProcessReversalCommandHandler } from "../core/command/handlers/ProcessReversalCommandHandler";
+import { ResetAccountCommandHandler } from "../core/command/handlers/ResetAccountCommandHandler";
 
 container.register("Database", Database);
 container.register("MessageBroker", RedisMessageBroker);
@@ -38,3 +43,11 @@ container.register(
     "TransactionHistoryProjection",
     TransactionHistoryProjection
 );
+container.register("SagaManager", SagaManager);
+container.register("ReversalSaga", ReversalSaga);
+container.register("MonthlyResetSaga", MonthlyResetSaga);
+container.register(
+    "ProcessReversalCommandHandler",
+    ProcessReversalCommandHandler
+);
+container.register("ResetAccountCommandHandler", ResetAccountCommandHandler);
