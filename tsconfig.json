@@ -25,6 +25,10 @@
     "noPropertyAccessFromIndexSignature": false,
 
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/tests/load/k6/types"
+    ]
   }
 }
