@@ -5,6 +5,7 @@ import { accountRoutes } from "./api/routes/accounts";
 import { queryRoutes } from "./api/routes/queries";
 import { adminRoutes } from "./api/routes/admin";
 import { metricsRoutes } from "./api/routes/metrics";
+import { healthRoutes } from "./api/routes/health";
 
 // Initialize the container
 initializeContainer();
@@ -17,6 +18,7 @@ fastify.register(accountRoutes);
 fastify.register(queryRoutes);
 fastify.register(adminRoutes);
 fastify.register(metricsRoutes);
+fastify.register(healthRoutes);
 
 fastify.listen({ port: 3000 }, (err) => {
     if (err) {
