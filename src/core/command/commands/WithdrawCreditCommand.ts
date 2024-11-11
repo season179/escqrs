@@ -4,7 +4,7 @@ import type { Command } from "../Command";
 export interface WithdrawCreditCommand extends Command {
     type: "WITHDRAW_CREDIT";
     payload: {
-        ebid: string;
+        uid: string;
         amount: number;
     };
 }

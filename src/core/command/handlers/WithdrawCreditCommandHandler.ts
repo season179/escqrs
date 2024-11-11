@@ -7,17 +7,14 @@ import type { EventBus } from "../../event/EventBus";
 import { DomainError } from "../../errors/DomainError";
 
 export class WithdrawCreditCommandHandler implements CommandHandler {
-    constructor(
-        private eventStore: EventStore,
-        private eventBus: EventBus
-    ) {}
+    constructor(private eventStore: EventStore, private eventBus: EventBus) {}
 
     async handle(command: WithdrawCreditCommand): Promise<void> {
         if (command.payload.amount <= 0) {
             throw new DomainError("Withdrawal amount must be positive");
         }
 
-        const aggregate = new EarnWageAccountAggregate(command.payload.ebid);
+        const aggregate = new EarnWageAccountAggregate(command.payload.uid);
         const events = await this.eventStore.getEvents(aggregate.getId());
 
         events.forEach((event) => aggregate.applyEvent(event));

@@ -3,7 +3,8 @@ export interface Event {
     id: string;
     type: string;
     aggregateId: string;
-    ebid: string;
+    uid: string;
+    ebid?: string;
     version: number;
     timestamp: Date;
     payload: unknown;

@@ -57,9 +57,11 @@ export class RedisMessageBroker {
         channel: string,
         handler: (message: Message) => Promise<void>
     ): Promise<void> {
+        console.log('Subscribing to channel:', channel);
         if (!this.handlers.has(channel)) {
             this.handlers.set(channel, new Set());
             await this.subscriber.subscribe(channel);
+            console.log('Subscribed to Redis channel:', channel);
         }
         this.handlers.get(channel)?.add(handler);
     }
@@ -68,7 +70,9 @@ export class RedisMessageBroker {
         channel: string,
         message: string
     ): Promise<void> {
+        console.log("Redis received message on channel:", channel);
         const handlers = this.handlers.get(channel);
+        console.log("Found handlers:", !!handlers);
         if (handlers) {
             const parsedMessage = JSON.parse(message) as Message;
             const promises = Array.from(handlers).map((handler) =>

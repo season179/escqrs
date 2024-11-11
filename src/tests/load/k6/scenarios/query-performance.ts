@@ -18,10 +18,10 @@ export const options = {
 };
 
 export default function () {
-    const ebid = `emp_${Math.floor(Math.random() * 100)}`; // Use smaller pool for more cache hits
+    const uid = `emp_${Math.floor(Math.random() * 100)}`; // Use smaller pool for more cache hits
 
     // Get balance
-    const balanceResponse = get(`${BASE_URL}/accounts/${ebid}/balance`);
+    const balanceResponse = get(`${BASE_URL}/accounts/${uid}/balance`);
 
     check(balanceResponse, {
         "balance query status is 200": (r) => r.status === 200,
@@ -31,7 +31,7 @@ export default function () {
 
     // Get transaction history
     const historyResponse = get(
-        `${BASE_URL}/accounts/${ebid}/transactions?page=1&limit=10`
+        `${BASE_URL}/accounts/${uid}/transactions?page=1&limit=10`
     );
 
     check(historyResponse, {

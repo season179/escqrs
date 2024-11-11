@@ -25,13 +25,13 @@ describe("Account Operations Integration", () => {
     });
 
     it("should handle full account operation cycle", async () => {
-        const ebid = "emp123";
+        const uid = "emp123";
 
         // Grant credit
         const grantCommand: GrantCreditCommand = {
             type: "GRANT_CREDIT",
             payload: {
-                ebid,
+                uid,
                 amount: 1000,
             },
         };
@@ -40,7 +40,7 @@ describe("Account Operations Integration", () => {
         // Check balance
         const balanceQuery: GetAccountBalanceQuery = {
             type: "GET_ACCOUNT_BALANCE",
-            payload: { ebid },
+            payload: { uid },
         };
         let balance = await queryBus.execute<{ balance: number }>(balanceQuery);
         expect(balance.balance).toBe(1000);
@@ -49,7 +49,7 @@ describe("Account Operations Integration", () => {
         const withdrawCommand: WithdrawCreditCommand = {
             type: "WITHDRAW_CREDIT",
             payload: {
-                ebid,
+                uid,
                 amount: 300,
             },
         };

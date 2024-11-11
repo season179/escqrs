@@ -5,12 +5,14 @@ import { DomainError } from "../errors/DomainError";
 
 export class EarnWageAccountAggregate {
     private id: string;
-    private ebid: string;
+    private uid: string;
+    private ebid?: string;
     private balance: number = 0;
     private version: number = 0;
 
-    constructor(ebid: string) {
+    constructor(uid: string, ebid?: string) {
         this.id = nanoid();
+        this.uid = uid;
         this.ebid = ebid;
     }
 
@@ -31,6 +33,7 @@ export class EarnWageAccountAggregate {
             id: nanoid(),
             type: "CREDIT_GRANTED",
             aggregateId: this.id,
+            uid: this.uid,
             ebid: this.ebid,
             version: this.version + 1,
             timestamp: new Date(),
@@ -47,7 +50,7 @@ export class EarnWageAccountAggregate {
             id: nanoid(),
             type: "CREDIT_WITHDRAWN",
             aggregateId: this.id,
-            ebid: this.ebid,
+            uid: this.uid,
             version: this.version + 1,
             timestamp: new Date(),
             payload: { amount },
@@ -59,7 +62,7 @@ export class EarnWageAccountAggregate {
             id: nanoid(),
             type: "REVERSAL_PROCESSED",
             aggregateId: this.id,
-            ebid: this.ebid,
+            uid: this.uid,
             version: this.version + 1,
             timestamp: new Date(),
             payload: { transactionId, amount },
@@ -72,7 +75,7 @@ export class EarnWageAccountAggregate {
             id: nanoid(),
             type: "ACCOUNT_RESET",
             aggregateId: this.id,
-            ebid: this.ebid,
+            uid: this.uid,
             version: this.version + 1,
             timestamp: new Date(),
             payload: { previousBalance: this.balance },
@@ -83,7 +86,11 @@ export class EarnWageAccountAggregate {
         return this.id;
     }
 
-    getEbid(): string {
+    getUid(): string {
+        return this.uid;
+    }
+
+    getEbid(): string | undefined {
         return this.ebid;
     }
 

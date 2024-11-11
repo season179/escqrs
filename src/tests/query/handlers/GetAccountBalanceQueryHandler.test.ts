@@ -19,7 +19,7 @@ describe("GetAccountBalanceQueryHandler", () => {
         const query: GetAccountBalanceQuery = {
             type: "GET_ACCOUNT_BALANCE",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
             },
         };
 
@@ -34,7 +34,7 @@ describe("GetAccountBalanceQueryHandler", () => {
         const query: GetAccountBalanceQuery = {
             type: "GET_ACCOUNT_BALANCE",
             payload: {
-                ebid: "emp456",
+                uid: "emp456",
             },
         };
 

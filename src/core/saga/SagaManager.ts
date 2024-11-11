@@ -5,29 +5,29 @@ import type { Saga } from "./Saga";
 import { SagaStatus } from "./Saga";
 
 export class SagaManager {
-    constructor(private db: Database) {
-        this.initialize();
-    }
+    constructor(private db: Database) {}
 
-    private async initialize(): Promise<void> {
+    public async initialize(): Promise<void> {
         await this.db.query(`
-      CREATE TABLE IF NOT EXISTS sagas (
-        saga_id TEXT PRIMARY KEY,
-        type TEXT NOT NULL,
-        status TEXT NOT NULL,
-        data JSONB NOT NULL,
-        last_updated TIMESTAMP NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_sagas_type ON sagas(type);
-      CREATE INDEX IF NOT EXISTS idx_sagas_status ON sagas(status);
-    `);
+            CREATE TABLE IF NOT EXISTS sagas (
+                saga_id TEXT PRIMARY KEY,
+                type TEXT NOT NULL,
+                status TEXT NOT NULL,
+                data JSONB NOT NULL,
+                last_updated TIMESTAMP NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_sagas_type ON sagas(type);
+            CREATE INDEX IF NOT EXISTS idx_sagas_status ON sagas(status);
+        `);
     }
 
     async create(type: string, data: unknown): Promise<string> {
         const sagaId = nanoid();
         await this.db.query(
-            `INSERT INTO sagas (saga_id, type, status, data, last_updated)
-       VALUES ($1, $2, $3, $4, $5)`,
+            `
+            INSERT INTO sagas (saga_id, type, status, data, last_updated)
+            VALUES ($1, $2, $3, $4, $5)
+            `,
             [sagaId, type, SagaStatus.STARTED, data, new Date()]
         );
         return sagaId;
@@ -39,9 +39,10 @@ export class SagaManager {
         data: unknown
     ): Promise<void> {
         await this.db.query(
-            `UPDATE sagas 
-       SET status = $1, data = $2, last_updated = $3
-       WHERE saga_id = $4`,
+            `
+            UPDATE sagas 
+            SET status = $1, data = $2, last_updated = $3
+            WHERE saga_id = $4`,
             [status, data, new Date(), sagaId]
         );
     }

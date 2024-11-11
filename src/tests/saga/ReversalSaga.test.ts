@@ -34,13 +34,13 @@ describe("ReversalSaga", () => {
         const event = {
             type: "REVERSAL_REQUESTED",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
                 transactionId: "tx123",
                 amount: 100,
             },
             id: "event123",
             aggregateId: "agg123",
-            ebid: "emp123",
+            uid: "emp123",
             version: 1,
             timestamp: new Date(),
         };

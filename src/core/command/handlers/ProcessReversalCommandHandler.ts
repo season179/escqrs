@@ -6,13 +6,10 @@ import type { EventStore } from "../../event/EventStore";
 import type { EventBus } from "../../event/EventBus";
 
 export class ProcessReversalCommandHandler implements CommandHandler {
-    constructor(
-        private eventStore: EventStore,
-        private eventBus: EventBus
-    ) {}
+    constructor(private eventStore: EventStore, private eventBus: EventBus) {}
 
     async handle(command: ProcessReversalCommand): Promise<void> {
-        const aggregate = new EarnWageAccountAggregate(command.payload.ebid);
+        const aggregate = new EarnWageAccountAggregate(command.payload.uid);
         const events = await this.eventStore.getEvents(aggregate.getId());
 
         events.forEach((event) => aggregate.applyEvent(event));

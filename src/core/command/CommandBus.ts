@@ -15,8 +15,12 @@ export class CommandBus {
         await this.messageBroker.subscribe(
             this.COMMAND_CHANNEL,
             async (message: unknown) => {
+                console.log('Received message:', message);
+
                 if (this.isCommand(message)) {
                     const handler = this.handlers.get(message.type);
+                    console.log('Found handler:', !!handler);
+                    
                     if (handler) {
                         await handler.handle(message);
                     }

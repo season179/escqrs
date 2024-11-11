@@ -7,27 +7,34 @@ export async function accountRoutes(fastify: FastifyInstance): Promise<void> {
     const container = ServiceContainer.getInstance();
     const commandBus = container.resolve<CommandBus>("CommandBus");
 
-    fastify.post<{ Params: { ebid: string }; Body: { amount: number } }>(
-        "/accounts/:ebid/credits",
-        async (request, reply) => {
-            await commandBus.dispatch({
-                type: "GRANT_CREDIT",
-                payload: {
-                    ebid: request.params.ebid,
-                    amount: request.body.amount,
-                },
-            });
-            return reply.status(202).send();
-        }
-    );
+    fastify.post<{
+        Params: { identifier: string };
+        Body: { amount: number };
+    }>("/accounts/:identifier/credits", async (request, reply) => {
+        const { identifier } = request.params;
+        const isEbid = identifier.startsWith("EPM"); // `ebid` always starts with `EPM`
 
-    fastify.post<{ Params: { ebid: string }; Body: { amount: number } }>(
-        "/accounts/:ebid/withdrawals",
+        const abc = await commandBus.dispatch({
+            type: "GRANT_CREDIT",
+            payload: {
+                uid: isEbid ? undefined : identifier,
+                ebid: isEbid ? identifier : undefined,
+                amount: request.body.amount,
+            },
+        });
+
+        console.log(abc);
+
+        return reply.status(202).send();
+    });
+
+    fastify.post<{ Params: { uid: string }; Body: { amount: number } }>(
+        "/accounts/:uid/withdrawals",
         async (request, reply) => {
             await commandBus.dispatch({
                 type: "WITHDRAW_CREDIT",
                 payload: {
-                    ebid: request.params.ebid,
+                    uid: request.params.uid,
                     amount: request.body.amount,
                 },
             });

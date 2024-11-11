@@ -19,13 +19,13 @@ export const options = {
 };
 
 export default function () {
-    const ebid = `emp_${Math.floor(Math.random() * 10)}`; // Use very small pool to generate lots of events
+    const uid = `emp_${Math.floor(Math.random() * 10)}`; // Use very small pool to generate lots of events
 
     // Perform multiple operations to generate events
     for (let i = 0; i < 5; i++) {
         // Grant credit
         const grantResponse = post(
-            `${BASE_URL}/accounts/${ebid}/credits`,
+            `${BASE_URL}/accounts/${uid}/credits`,
             JSON.stringify({ amount: 100 }),
             { headers: { "Content-Type": "application/json" } }
         );
@@ -38,7 +38,7 @@ export default function () {
 
         // Withdraw credit
         const withdrawResponse = post(
-            `${BASE_URL}/accounts/${ebid}/withdrawals`,
+            `${BASE_URL}/accounts/${uid}/withdrawals`,
             JSON.stringify({ amount: 50 }),
             { headers: { "Content-Type": "application/json" } }
         );
@@ -51,7 +51,7 @@ export default function () {
     }
 
     // Check final balance to verify event replay
-    const balanceResponse = get(`${BASE_URL}/accounts/${ebid}/balance`);
+    const balanceResponse = get(`${BASE_URL}/accounts/${uid}/balance`);
 
     check(balanceResponse, {
         "balance query status is 200": (r) => r.status === 200,

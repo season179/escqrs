@@ -8,12 +8,12 @@ export class EventStore {
     async save(event: Event): Promise<void> {
         await this.db.query(
             `INSERT INTO events 
-       (event_id, aggregate_id, ebid, event_type, version, timestamp, payload, metadata) 
+       (event_id, aggregate_id, uid, event_type, version, timestamp, payload, metadata) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
                 event.id,
                 event.aggregateId,
-                event.ebid,
+                event.uid,
                 event.type,
                 event.version,
                 event.timestamp,

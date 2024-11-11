@@ -4,6 +4,6 @@ import type { Command } from "../Command";
 export interface ResetAccountCommand extends Command {
     type: "RESET_ACCOUNT";
     payload: {
-        ebid: string;
+        uid: string;
     };
 }

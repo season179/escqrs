@@ -7,22 +7,27 @@ import type { EventBus } from "../../event/EventBus";
 import { DomainError } from "../../errors/DomainError";
 
 export class GrantCreditCommandHandler implements CommandHandler {
-    constructor(
-        private eventStore: EventStore,
-        private eventBus: EventBus
-    ) {}
+    constructor(private eventStore: EventStore, private eventBus: EventBus) {}
 
     async handle(command: GrantCreditCommand): Promise<void> {
-        if (command.payload.amount <= 0) {
+        console.log("hello")
+        const { uid, ebid, amount } = command.payload;
+
+        if (!uid && !ebid) {
+            throw new DomainError("Either uid or ebid must be provided");
+        }
+
+        const aggregate = new EarnWageAccountAggregate(uid || "", ebid);
+
+        if (amount <= 0) {
             throw new DomainError("Credit amount must be positive");
         }
 
-        const aggregate = new EarnWageAccountAggregate(command.payload.ebid);
         const events = await this.eventStore.getEvents(aggregate.getId());
 
         events.forEach((event) => aggregate.applyEvent(event));
 
-        const newEvent = aggregate.grantCredit(command.payload.amount);
+        const newEvent = aggregate.grantCredit(amount);
         await this.eventStore.save(newEvent);
         await this.eventBus.publish(newEvent);
     }

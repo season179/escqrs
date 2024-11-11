@@ -22,14 +22,14 @@ export class GetTransactionHistoryQueryHandler implements QueryHandler {
             this.db.query(
                 `SELECT transaction_id, type, amount, timestamp 
          FROM transaction_history 
-         WHERE ebid = $1 
+         WHERE uid = $1 
          ORDER BY timestamp DESC 
          LIMIT $2 OFFSET $3`,
-                [query.payload.ebid, limit, offset]
+                [query.payload.uid, limit, offset]
             ),
             this.db.query(
-                "SELECT COUNT(*) as total FROM transaction_history WHERE ebid = $1",
-                [query.payload.ebid]
+                "SELECT COUNT(*) as total FROM transaction_history WHERE uid = $1",
+                [query.payload.uid]
             ),
         ]);
 

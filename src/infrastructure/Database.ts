@@ -17,25 +17,26 @@ export class Database {
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
         });
-        this.initialize();
     }
 
-    private async initialize(): Promise<void> {
+    public async initialize(): Promise<void> {
         await this.pool.query(`
-      CREATE TABLE IF NOT EXISTS events (
-        event_id TEXT PRIMARY KEY,
-        aggregate_id TEXT NOT NULL,
-        ebid TEXT NOT NULL,
-        event_type TEXT NOT NULL,
-        version INTEGER NOT NULL,
-        timestamp TIMESTAMP NOT NULL,
-        payload JSONB NOT NULL,
-        metadata JSONB
-      );
-      
-      CREATE INDEX IF NOT EXISTS idx_events_aggregate_id ON events(aggregate_id);
-      CREATE INDEX IF NOT EXISTS idx_events_ebid ON events(ebid);
-    `);
+            CREATE TABLE IF NOT EXISTS events (
+                event_id TEXT PRIMARY KEY,
+                aggregate_id TEXT NOT NULL,
+                uid TEXT NOT NULL,
+                ebid TEXT,
+                event_type TEXT NOT NULL,
+                version INTEGER NOT NULL,
+                timestamp TIMESTAMP NOT NULL,
+                payload JSONB NOT NULL,
+                metadata JSONB
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_events_aggregate_id ON events(aggregate_id);
+            CREATE INDEX IF NOT EXISTS idx_events_uid ON events(uid);
+            CREATE INDEX IF NOT EXISTS idx_events_ebid ON events(ebid);
+        `);
     }
 
     async query(sql: string, params: any[] = []): Promise<QueryResult> {

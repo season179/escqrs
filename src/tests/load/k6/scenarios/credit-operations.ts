@@ -24,7 +24,7 @@ export const options = {
 };
 
 const generateTestData = () => ({
-    ebid: `emp_${Math.floor(Math.random() * 1000)}`,
+    uid: `emp_${Math.floor(Math.random() * 1000)}`,
     amount: Math.floor(Math.random() * 1000) + 100,
 });
 
@@ -32,7 +32,7 @@ export default function () {
     const testData = generateTestData();
 
     const grantResponse = post(
-        `${BASE_URL}/accounts/${testData.ebid}/credits`,
+        `${BASE_URL}/accounts/${testData.uid}/credits`,
         JSON.stringify({ amount: testData.amount }),
         { headers: { "Content-Type": "application/json" } }
     );
@@ -44,9 +44,7 @@ export default function () {
 
     sleep(1);
 
-    const balanceResponse = get(
-        `${BASE_URL}/accounts/${testData.ebid}/balance`
-    );
+    const balanceResponse = get(`${BASE_URL}/accounts/${testData.uid}/balance`);
 
     check(balanceResponse, {
         "get balance status is 200": (r: Response): boolean => r.status === 200,
@@ -60,7 +58,7 @@ export default function () {
 
     const withdrawAmount = Math.floor(testData.amount / 2);
     const withdrawResponse = post(
-        `${BASE_URL}/accounts/${testData.ebid}/withdrawals`,
+        `${BASE_URL}/accounts/${testData.uid}/withdrawals`,
         JSON.stringify({ amount: withdrawAmount }),
         { headers: { "Content-Type": "application/json" } }
     );

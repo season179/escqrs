@@ -13,7 +13,7 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
             id: nanoid(),
             type: "MONTHLY_RESET_TRIGGERED",
             aggregateId: "system",
-            ebid: "system",
+            uid: "system",
             version: 1,
             timestamp: new Date(),
             payload: { triggeredAt: new Date() },

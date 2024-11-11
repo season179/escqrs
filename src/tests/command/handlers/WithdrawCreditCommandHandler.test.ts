@@ -33,7 +33,7 @@ describe("WithdrawCreditCommandHandler", () => {
         const command: WithdrawCreditCommand = {
             type: "WITHDRAW_CREDIT",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
                 amount: 50,
             },
         };
@@ -48,7 +48,7 @@ describe("WithdrawCreditCommandHandler", () => {
         const command: WithdrawCreditCommand = {
             type: "WITHDRAW_CREDIT",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
                 amount: 150,
             },
         };

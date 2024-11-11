@@ -50,7 +50,7 @@ export class MonthlyResetSaga {
                 await this.commandBus.dispatch({
                     type: "RESET_ACCOUNT",
                     payload: {
-                        ebid: account.ebid,
+                        uid: account.uid,
                     },
                 });
             }
@@ -66,9 +66,9 @@ export class MonthlyResetSaga {
         }
     }
 
-    private async getActiveAccounts(): Promise<Array<{ ebid: string }>> {
+    private async getActiveAccounts(): Promise<Array<{ uid: string }>> {
         const result = await this.db.query(
-            "SELECT DISTINCT ebid FROM account_balances WHERE current_balance > 0"
+            "SELECT DISTINCT uid FROM account_balances WHERE current_balance > 0"
         );
         return result.rows;
     }

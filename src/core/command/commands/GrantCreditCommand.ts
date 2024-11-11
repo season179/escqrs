@@ -4,7 +4,8 @@ import type { Command } from "../Command";
 export interface GrantCreditCommand extends Command {
     type: "GRANT_CREDIT";
     payload: {
-        ebid: string;
+        uid: string;
+        ebid?: string;
         amount: number;
     };
 }

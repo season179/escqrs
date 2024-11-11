@@ -7,13 +7,13 @@ export async function queryRoutes(fastify: FastifyInstance): Promise<void> {
     const container = ServiceContainer.getInstance();
     const queryBus = container.resolve<QueryBus>("QueryBus");
 
-    fastify.get<{ Params: { ebid: string } }>(
-        "/accounts/:ebid/balance",
+    fastify.get<{ Params: { uid: string } }>(
+        "/accounts/:uid/balance",
         async (request, reply) => {
             const result = await queryBus.execute({
                 type: "GET_ACCOUNT_BALANCE",
                 payload: {
-                    ebid: request.params.ebid,
+                    uid: request.params.uid,
                 },
             });
             return reply.send(result);
@@ -21,13 +21,13 @@ export async function queryRoutes(fastify: FastifyInstance): Promise<void> {
     );
 
     fastify.get<{
-        Params: { ebid: string };
+        Params: { uid: string };
         Querystring: { page?: number; limit?: number };
-    }>("/accounts/:ebid/transactions", async (request, reply) => {
+    }>("/accounts/:uid/transactions", async (request, reply) => {
         const result = await queryBus.execute({
             type: "GET_TRANSACTION_HISTORY",
             payload: {
-                ebid: request.params.ebid,
+                uid: request.params.uid,
                 page: request.query.page,
                 limit: request.query.limit,
             },

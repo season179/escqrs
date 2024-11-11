@@ -22,7 +22,7 @@ describe("GrantCreditCommandHandler", () => {
         const command: GrantCreditCommand = {
             type: "GRANT_CREDIT",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
                 amount: 100,
             },
         };
@@ -37,7 +37,7 @@ describe("GrantCreditCommandHandler", () => {
         const command: GrantCreditCommand = {
             type: "GRANT_CREDIT",
             payload: {
-                ebid: "emp123",
+                uid: "emp123",
                 amount: -100,
             },
         };

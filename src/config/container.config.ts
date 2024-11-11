@@ -20,6 +20,8 @@ import { EventStreamOptimizer } from "../core/performance/EventStreamOptimizer";
 import { QueryOptimizer } from "../core/performance/QueryOptimizer";
 import { Logger } from "../core/logging/Logger";
 import { Metrics } from "../core/monitoring/Metrics";
+import { InitializationService } from "../core/initialisation/InitialisationService";
+import type { CommandHandler } from "../core/command/CommandHandler";
 
 export function initializeContainer(): void {
     const container = ServiceContainer.getInstance();
@@ -27,8 +29,31 @@ export function initializeContainer(): void {
     // Infrastructure
     const database = new Database();
     const messageBroker = new RedisMessageBroker();
+
+    // Create instances
+    const sagaManager = new SagaManager(database);
+    const transactionHistoryProjection = new TransactionHistoryProjection(
+        database
+    );
+    const accountBalanceProjection = new AccountBalanceProjection(database);
+
+    // Create initialization service
+    const initializationService = new InitializationService(
+        database,
+        sagaManager,
+        accountBalanceProjection,
+        transactionHistoryProjection
+    );
+
     container.register("Database", database);
     container.register("MessageBroker", messageBroker);
+    container.register("SagaManager", sagaManager);
+    container.register("AccountBalanceProjection", accountBalanceProjection);
+    container.register(
+        "TransactionHistoryProjection",
+        transactionHistoryProjection
+    );
+    container.register("InitializationService", initializationService);
 
     // Core services
     const eventStore = new EventStore(database);
@@ -40,10 +65,16 @@ export function initializeContainer(): void {
     container.register("EventBus", eventBus);
     container.register("CommandBus", commandBus);
     container.register("QueryBus", queryBus);
+
     container.register(
         "GrantCreditCommandHandler",
         new GrantCreditCommandHandler(eventStore, eventBus)
     );
+    const handler: CommandHandler = container.resolve("GrantCreditCommandHandler");
+    console.log("Retrieved handler:", handler);
+    commandBus.register("GRANT_CREDIT", handler);
+
+
     container.register(
         "WithdrawCreditCommandHandler",
         new WithdrawCreditCommandHandler(eventStore, eventBus)
@@ -58,26 +89,12 @@ export function initializeContainer(): void {
         new GetTransactionHistoryQueryHandler(database)
     );
     container.register(
-        "AccountBalanceProjection",
-        new AccountBalanceProjection(database)
-    );
-    container.register(
-        "TransactionHistoryProjection",
-        new TransactionHistoryProjection(database)
-    );
-    container.register("SagaManager", new SagaManager(database));
-    container.register(
         "ReversalSaga",
-        new ReversalSaga(commandBus, eventBus, new SagaManager(database))
+        new ReversalSaga(commandBus, eventBus, sagaManager)
     );
     container.register(
         "MonthlyResetSaga",
-        new MonthlyResetSaga(
-            commandBus,
-            eventBus,
-            new SagaManager(database),
-            database
-        )
+        new MonthlyResetSaga(commandBus, eventBus, sagaManager, database)
     );
     container.register(
         "ProcessReversalCommandHandler",

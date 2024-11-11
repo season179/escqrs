@@ -4,13 +4,13 @@ import type { Event } from "../core/event/Event";
 
 export class EarnWageAccount {
     private id: string;
-    private ebid: string;
+    private uid: string;
     private balance: number = 0;
     private version: number = 0;
 
-    constructor(ebid: string) {
+    constructor(uid: string) {
         this.id = nanoid();
-        this.ebid = ebid;
+        this.uid = uid;
     }
 
     applyEvent(event: Event): void {
@@ -30,7 +30,7 @@ export class EarnWageAccount {
     }
 
     getEbid(): string {
-        return this.ebid;
+        return this.uid;
     }
 
     getBalance(): number {

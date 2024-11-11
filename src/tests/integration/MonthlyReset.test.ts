@@ -30,13 +30,13 @@ describe("Monthly Reset Integration", () => {
     });
 
     it("should reset all accounts at month end", async () => {
-        const ebid = "emp123";
+        const uid = "emp123";
 
         // Setup initial balance
         const grantCommand: GrantCreditCommand = {
             type: "GRANT_CREDIT",
             payload: {
-                ebid,
+                uid,
                 amount: 1000,
             },
         };
@@ -47,7 +47,7 @@ describe("Monthly Reset Integration", () => {
             id: nanoid(),
             type: "MONTHLY_RESET_TRIGGERED",
             aggregateId: "system",
-            ebid: "system",
+            uid: "system",
             version: 1,
             timestamp: new Date(),
             payload: { triggeredAt: new Date() },
@@ -59,7 +59,7 @@ describe("Monthly Reset Integration", () => {
         // Check final balance
         const balanceQuery: GetAccountBalanceQuery = {
             type: "GET_ACCOUNT_BALANCE",
-            payload: { ebid },
+            payload: { uid },
         };
         const balance = await queryBus.execute<{ balance: number }>(
             balanceQuery
