@@ -30,9 +30,9 @@ export class EarnWageAccountAggregate {
 
     grantCredit(amount: number): Event {
         return {
-            id: nanoid(),
+            id: `event-${nanoid()}`,
             type: "CREDIT_GRANTED",
-            aggregateId: this.id,
+            aggregateId: this.uid,
             uid: this.uid,
             ebid: this.ebid,
             version: this.version + 1,
@@ -47,9 +47,9 @@ export class EarnWageAccountAggregate {
         }
 
         return {
-            id: nanoid(),
+            id: `event-${nanoid()}`,
             type: "CREDIT_WITHDRAWN",
-            aggregateId: this.id,
+            aggregateId: this.uid,
             uid: this.uid,
             version: this.version + 1,
             timestamp: new Date(),
@@ -59,9 +59,9 @@ export class EarnWageAccountAggregate {
 
     processReversal(transactionId: string, amount: number): Event {
         return {
-            id: nanoid(),
+            id: `event-${nanoid()}`,
             type: "REVERSAL_PROCESSED",
-            aggregateId: this.id,
+            aggregateId: this.uid,
             uid: this.uid,
             version: this.version + 1,
             timestamp: new Date(),
@@ -72,7 +72,7 @@ export class EarnWageAccountAggregate {
 
     resetAccount(): Event {
         return {
-            id: nanoid(),
+            id: `event-${nanoid()}`,
             type: "ACCOUNT_RESET",
             aggregateId: this.id,
             uid: this.uid,

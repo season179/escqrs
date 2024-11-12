@@ -9,7 +9,7 @@ import { metricsRoutes } from "./api/routes/metrics";
 import { healthRoutes } from "./api/routes/health";
 import { ServiceContainer } from "./core/container/ServiceContainer";
 import { Database } from "./infrastructure/Database";
-import { RedisMessageBroker } from "./infrastructure/RedisMessageBroker";
+import { AzureServiceBusMessageBroker } from "./infrastructure/AzureServiceBusMessageBroker";
 
 // Initialize the container
 initializeContainer();
@@ -20,7 +20,8 @@ const fastify = Fastify({
 
 const container = ServiceContainer.getInstance();
 const db = container.resolve<Database>("Database");
-const messageBroker = container.resolve<RedisMessageBroker>("MessageBroker");
+const messageBroker =
+    container.resolve<AzureServiceBusMessageBroker>("MessageBroker");
 
 async function checkServicesReady() {
     try {
@@ -29,17 +30,6 @@ async function checkServicesReady() {
     } catch (error) {
         fastify.log.error(
             "Postgres is not ready: " +
-                (error instanceof Error ? error.message : "Unknown error")
-        );
-        process.exit(1);
-    }
-
-    try {
-        // Check if Redis is ready
-        await messageBroker.checkReady();
-    } catch (error) {
-        fastify.log.error(
-            "Redis is not ready: " +
                 (error instanceof Error ? error.message : "Unknown error")
         );
         process.exit(1);

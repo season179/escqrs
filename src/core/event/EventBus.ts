@@ -1,15 +1,13 @@
 // src/core/event/EventBus.ts
 import type { Event } from "./Event";
 import type { EventHandler } from "./EventHandler";
-import type { RedisMessageBroker } from "../../infrastructure/RedisMessageBroker";
+import type { AzureServiceBusMessageBroker } from "../../infrastructure/AzureServiceBusMessageBroker";
 
 export class EventBus {
     private handlers = new Map<string, EventHandler[]>();
-    private readonly EVENT_CHANNEL = "events";
+    private readonly EVENT_CHANNEL = "escqrs-events";
 
-    constructor(
-        private messageBroker: RedisMessageBroker
-    ) {
+    constructor(private messageBroker: AzureServiceBusMessageBroker) {
         this.setupEventSubscription();
     }
 
@@ -17,7 +15,7 @@ export class EventBus {
         await this.messageBroker.subscribe(
             this.EVENT_CHANNEL,
             async (message: unknown) => {
-                const event = message as Event;  // Type assertion
+                const event = message as Event;
                 const handlers = this.handlers.get(event.type) || [];
                 await Promise.all(
                     handlers.map((handler) => handler.handle(event))

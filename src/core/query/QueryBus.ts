@@ -2,16 +2,14 @@
 import { nanoid } from "nanoid";
 import type { Query } from "./Query";
 import type { QueryHandler } from "./QueryHandler";
-import type { RedisMessageBroker } from "../../infrastructure/RedisMessageBroker";
+import type { AzureServiceBusMessageBroker } from "../../infrastructure/AzureServiceBusMessageBroker";
 
 export class QueryBus {
     private handlers = new Map<string, QueryHandler>();
-    private readonly QUERY_CHANNEL = "queries";
+    private readonly QUERY_CHANNEL = "escqrs-queries";
     private readonly RESPONSE_CHANNEL_PREFIX = "query_response:";
 
-    constructor(
-        private messageBroker: RedisMessageBroker
-    ) {
+    constructor(private messageBroker: AzureServiceBusMessageBroker) {
         this.setupQuerySubscription();
     }
 

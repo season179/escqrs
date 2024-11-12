@@ -3,7 +3,7 @@ import { CommandBus } from "../core/command/CommandBus";
 import { EventBus } from "../core/event/EventBus";
 import { EventStore } from "../core/event/EventStore";
 import { Database } from "../infrastructure/Database";
-import { RedisMessageBroker } from "../infrastructure/RedisMessageBroker";
+import { AzureServiceBusMessageBroker } from "../infrastructure/AzureServiceBusMessageBroker";
 import { GrantCreditCommandHandler } from "../core/command/handlers/GrantCreditCommandHandler";
 import { WithdrawCreditCommandHandler } from "../core/command/handlers/WithdrawCreditCommandHandler";
 import { QueryBus } from "../core/query/QueryBus";
@@ -22,13 +22,14 @@ import { Logger } from "../core/logging/Logger";
 import { Metrics } from "../core/monitoring/Metrics";
 import { InitializationService } from "../core/initialisation/InitialisationService";
 import type { CommandHandler } from "../core/command/CommandHandler";
+import { env } from "./env.config";
 
 export function initializeContainer(): void {
     const container = ServiceContainer.getInstance();
 
     // Infrastructure
     const database = new Database();
-    const messageBroker = new RedisMessageBroker();
+    const messageBroker = new AzureServiceBusMessageBroker(env.AZURE_SERVICE_BUS_CONNECTION_STRING);
 
     // Create instances
     const sagaManager = new SagaManager(database);
@@ -71,7 +72,7 @@ export function initializeContainer(): void {
         new GrantCreditCommandHandler(eventStore, eventBus)
     );
     const handler: CommandHandler = container.resolve("GrantCreditCommandHandler");
-    console.log("Retrieved handler:", handler);
+    // console.log("Retrieved handler:", handler);
     commandBus.register("GRANT_CREDIT", handler);
 
 

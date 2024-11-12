@@ -16,13 +16,11 @@ const envSchema = z.object({
     POSTGRES_USER: z.string().default("postgres"),
     POSTGRES_PASSWORD: z.string(),
 
-    // Redis
-    REDIS_HOST: z.string().default("localhost"),
-    REDIS_PORT: z.string().default("6379"),
-    REDIS_PASSWORD: z.string().optional(),
-
     // Server
     PORT: z.string().default("3000"),
+
+    // Azure Service Bus
+    AZURE_SERVICE_BUS_CONNECTION_STRING: z.string(),
 });
 
 const envParse = envSchema.safeParse(process.env);
