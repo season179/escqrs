@@ -1,54 +1,52 @@
-// index.ts
-import "./config/env.config";
 import Fastify from "fastify";
-import { initializeContainer } from "./config/container.config";
-import { accountRoutes } from "./api/routes/accounts";
-import { queryRoutes } from "./api/routes/queries";
-import { adminRoutes } from "./api/routes/admin";
-import { metricsRoutes } from "./api/routes/metrics";
-import { healthRoutes } from "./api/routes/health";
-import { ServiceContainer } from "./core/container/ServiceContainer";
-import { Database } from "./infrastructure/Database";
-import { AzureServiceBusMessageBroker } from "./infrastructure/AzureServiceBusMessageBroker";
+import { GrantCreditsCommandHandler } from "./GrantCreditsCommandHandler";
+import { EventStore } from "./EventStore";
 
-// Initialize the container
-initializeContainer();
+const fastify = Fastify();
 
-const fastify = Fastify({
-    logger: true,
+fastify.post("/grant-credits", async (request, reply) => {
+    const { uid, amount } = request.body as { uid: string; amount: number };
+
+    if (amount <= 0) {
+        reply.status(400).send({ error: "Amount must be greater than 0" });
+        return;
+    }
+
+    const handler = new GrantCreditsCommandHandler();
+    await handler.handle({ uid, amount });
+
+    reply.send({ message: "Credits granted successfully" });
 });
 
-const container = ServiceContainer.getInstance();
-const db = container.resolve<Database>("Database");
-const messageBroker =
-    container.resolve<AzureServiceBusMessageBroker>("MessageBroker");
-
-async function checkServicesReady() {
-    try {
-        // Check if Postgres is ready
-        await db.query("SELECT 1");
-    } catch (error) {
-        fastify.log.error(
-            "Postgres is not ready: " +
-                (error instanceof Error ? error.message : "Unknown error")
-        );
+fastify.listen({ port: 3000 }, (err, address) => {
+    if (err) {
+        console.error(err);
         process.exit(1);
     }
-}
+    console.log(`Server listening at ${address}`);
+});
 
-(async () => {
-    await checkServicesReady();
+// Add shutdown handlers
+process.on("SIGTERM", async () => {
+    try {
+        console.log("Received SIGTERM, shutting down gracefully");
+        await fastify.close(); // First close fastify server
+        await EventStore.cleanup(); // Then cleanup DB connections
+        process.exit(0);
+    } catch (err) {
+        console.error("Error during shutdown:", err);
+        process.exit(1);
+    }
+});
 
-    fastify.register(accountRoutes);
-    fastify.register(queryRoutes);
-    fastify.register(adminRoutes);
-    fastify.register(metricsRoutes);
-    fastify.register(healthRoutes);
-
-    fastify.listen({ port: 3000 }, (err) => {
-        if (err) {
-            fastify.log.error(err);
-            process.exit(1);
-        }
-    });
-})();
+process.on("SIGINT", async () => {
+    try {
+        console.log("Received SIGINT, shutting down gracefully");
+        await fastify.close(); // First close fastify server
+        await EventStore.cleanup(); // Then cleanup DB connections
+        process.exit(0);
+    } catch (err) {
+        console.error("Error during shutdown:", err);
+        process.exit(1);
+    }
+});
