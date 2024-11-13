@@ -6,7 +6,7 @@ import { config } from "dotenv";
 
 config();
 
-const pool = new Pool({
+export const pool = new Pool({
     user: process.env.POSTGRES_USER || "postgres",
     host: process.env.POSTGRES_HOST || "localhost",
     database: process.env.POSTGRES_DB || "earnwage",
@@ -48,20 +48,69 @@ export class EventStore {
         await pool.query(query);
     }
 
+    static async ensureBalanceTableExists(): Promise<void> {
+        const query = `
+            CREATE TABLE IF NOT EXISTS balances (
+                uid VARCHAR(255) PRIMARY KEY,
+                balance NUMERIC DEFAULT 0
+            )
+        `;
+        await pool.query(query);
+    }
+
     static async save(event: CreditGrantedEvent): Promise<void> {
         await this.ensureTableExists();
 
-        const query =
-            "INSERT INTO events (uid, type, payload) VALUES ($1, $2, $3)";
-        // Create a new object without the uid for the payload
-        const { uid, ...payloadWithoutUid } = event;
-        const values = [
-            uid,
-            event.constructor.name,
-            JSON.stringify(payloadWithoutUid),
-        ];
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
 
-        await pool.query(query, values);
+            // Get the current version for this aggregate
+            const versionQuery = `
+                SELECT COALESCE(MAX(version), 0) as current_version 
+                FROM events 
+                WHERE uid = $1
+            `;
+            const versionResult = await client.query(versionQuery, [event.uid]);
+            const nextVersion = versionResult.rows[0].current_version + 1;
+
+            // Insert the event with the next version
+            const query = `
+                INSERT INTO events (event_id, uid, type, version, payload) 
+                VALUES ($1, $2, $3, $4, $5)
+            `;
+            const { eventId, uid, ...payloadWithoutMetadata } = event;
+            const values = [
+                eventId,
+                uid,
+                event.constructor.name,
+                nextVersion,
+                JSON.stringify(payloadWithoutMetadata)
+            ];
+
+            await client.query(query, values);
+            await client.query('COMMIT');
+        } catch (error: any) {
+            await client.query('ROLLBACK');
+            if (error.constraint === 'events_uid_version_key') {
+                throw new Error('Concurrent modification detected');
+            }
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getBalanceByUid(uid: string): Promise<number> {
+        const query = `
+            SELECT SUM((payload->>'amount')::numeric) AS balance
+            FROM events
+            WHERE uid = $1 AND type = 'CreditGrantedEvent'
+        `;
+        const result = await pool.query(query, [uid]);
+
+        // If there are no events, return a balance of 0
+        return result.rows[0].balance ? parseFloat(result.rows[0].balance) : 0;
     }
 
     static async cleanup(): Promise<void> {

@@ -1,21 +1,45 @@
 import Fastify from "fastify";
 import { GrantCreditsCommandHandler } from "./GrantCreditsCommandHandler";
-import { EventStore } from "./EventStore";
+import { EventStore, pool } from "./EventStore";
 
 const fastify = Fastify();
 
 fastify.post("/grant-credits", async (request, reply) => {
-    const { uid, amount } = request.body as { uid: string; amount: number };
+    try {
+        const { uid, amount } = request.body as { uid: string; amount: number };
 
-    if (amount <= 0) {
-        reply.status(400).send({ error: "Amount must be greater than 0" });
-        return;
+        if (amount <= 0) {
+            reply.status(400).send({ error: "Amount must be greater than 0" });
+            return;
+        }
+
+        const handler = new GrantCreditsCommandHandler();
+        await handler.handle({ uid, amount });
+
+        reply.send({ message: "Credits granted successfully" });
+    } catch (error) {
+        console.error("Error granting credits:", error);
+        reply.status(500).send({ error: "An error occurred while granting credits" });
     }
+});
 
-    const handler = new GrantCreditsCommandHandler();
-    await handler.handle({ uid, amount });
+fastify.get("/balance/:uid", async (request, reply) => {
+    const { uid } = request.params as { uid: string };
 
-    reply.send({ message: "Credits granted successfully" });
+    try {
+        const query = "SELECT balance FROM balances WHERE uid = $1";
+        const result = await pool.query(query, [uid]);
+
+        if (result.rows.length === 0) {
+            reply.status(404).send({ error: "User not found" });
+            return;
+        }
+
+        reply.send({ uid, balance: parseFloat(result.rows[0].balance) });
+    } catch (error) {
+        console.error("Error fetching balance:", error);
+        reply.status(500).send({ error: "An error occurred while fetching balance" });
+    }
 });
 
 fastify.listen({ port: 3000 }, (err, address) => {

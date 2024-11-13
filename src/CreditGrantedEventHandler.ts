@@ -1,13 +1,13 @@
-
-
-import { CreditGrantedEvent } from './CreditGrantedEvent';
+import { CreditGrantedEvent } from "./CreditGrantedEvent";
+import { BalanceProjection } from "./BalanceProjection";
 
 export class CreditGrantedEventHandler {
     public async handle(event: CreditGrantedEvent): Promise<void> {
         const { uid, amount } = event;
 
-        // Implement business logic (e.g., update read model, notify other services, etc.)
+        // Call the BalanceProjection to update the read model
+        await BalanceProjection.project(event);
+
         console.log(`Credits granted: ${amount} for user ${uid}`);
-        // Add additional handling as needed
     }
 }
