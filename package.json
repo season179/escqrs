@@ -1,18 +1,26 @@
 {
-  "name": "es-csrs",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@types/pg": "^8.11.10"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "fastify": "^5.1.0",
-    "nanoid": "^5.0.8",
-    "pg": "^8.13.1"
-  }
+    "name": "es-csrs",
+    "module": "index.ts",
+    "type": "module",
+    "devDependencies": {
+        "@types/axios": "^0.14.4",
+        "@types/bun": "latest",
+        "@types/chai": "^5.0.1",
+        "@types/chai-as-promised": "^8.0.1",
+        "@types/chai-http": "^4.2.4",
+        "@types/pg": "^8.11.10",
+        "axios": "^1.7.7",
+        "chai": "^5.1.2",
+        "chai-as-promised": "^8.0.0",
+        "chai-http": "^5.1.1"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "fastify": "^5.1.0",
+        "nanoid": "^5.0.8",
+        "pg": "^8.13.1"
+    }
 }
