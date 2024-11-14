@@ -2,7 +2,19 @@
 
 import axios from "axios";
 import { expect } from "chai";
-import { describe, test, beforeAll } from "bun:test";
+import { describe, test, beforeAll, afterAll } from "bun:test";
+
+import { Pool } from "pg";
+import { config } from "dotenv";
+config();
+
+const pool = new Pool({
+    user: process.env.POSTGRES_USER || "postgres",
+    host: process.env.POSTGRES_HOST || "localhost",
+    database: process.env.POSTGRES_DB || "earnwage",
+    password: process.env.POSTGRES_PASSWORD || "your_secure_password_here",
+    port: parseInt(process.env.POSTGRES_PORT || "5432"),
+});
 
 const API_URL = "http://localhost:3000";
 
@@ -31,6 +43,23 @@ const users: User[] = [
 ];
 
 describe("API Tests", () => {
+    // Clean up database before running tests
+    beforeAll(async () => {
+        const uids = users.map((user) => user.uid);
+        const placeholders = uids.map((_, i) => `$${i + 1}`).join(",");
+        // Delete test data for the users
+        if (uids.length > 0) {
+            await pool.query(
+                `DELETE FROM events WHERE uid IN (${placeholders})`,
+                uids
+            );
+            await pool.query(
+                `DELETE FROM balances WHERE uid IN (${placeholders})`,
+                uids
+            );
+        }
+    });
+
     // Calculate expected balances
     beforeAll(() => {
         users.forEach((user) => {
@@ -104,5 +133,9 @@ describe("API Tests", () => {
                 expect(error.response.data.error).to.equal("User not found");
             }
         });
+    });
+
+    afterAll(async () => {
+        await pool.end();
     });
 });
