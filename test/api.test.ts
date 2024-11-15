@@ -22,6 +22,7 @@ interface User {
     uid: string;
     expectedBalance: number;
     credits: number[];
+    withdrawals: number[];
 }
 
 const users: User[] = [
@@ -29,16 +30,19 @@ const users: User[] = [
         uid: "user1",
         expectedBalance: 0,
         credits: [100, 200, 300, 400],
+        withdrawals: [150, 100],
     },
     {
         uid: "user2",
         expectedBalance: 0,
         credits: [500, 1000, 1500],
+        withdrawals: [500, 700],
     },
     {
         uid: "user3",
         expectedBalance: 0,
         credits: [50, 150, 250, 350, 450],
+        withdrawals: [100, 200, 300],
     },
 ];
 
@@ -63,15 +67,20 @@ describe("API Tests", () => {
     // Calculate expected balances
     beforeAll(() => {
         users.forEach((user) => {
-            user.expectedBalance = user.credits.reduce(
+            const totalCredits = user.credits.reduce(
                 (sum, credit) => sum + credit,
                 0
             );
+            const totalWithdrawals = user.withdrawals.reduce(
+                (sum, withdrawal) => sum + withdrawal,
+                0
+            );
+            user.expectedBalance = totalCredits - totalWithdrawals;
         });
     });
 
-    describe("Credit Granting and Balance Checking", () => {
-        // Test credit granting for each user
+    describe("Credit Granting, Withdrawal, and Balance Checking", () => {
+        // Test credit granting and withdrawals for each user
         users.forEach((user) => {
             describe(`User: ${user.uid}`, () => {
                 // Grant credits
@@ -88,6 +97,24 @@ describe("API Tests", () => {
                         expect(response.status).to.equal(200);
                         expect(response.data.message).to.equal(
                             "Credits granted successfully"
+                        );
+                    }
+                });
+
+                // Process withdrawals
+                test(`should process withdrawals for ${user.uid}`, async () => {
+                    for (const amount of user.withdrawals) {
+                        const response = await axios.post(
+                            `${API_URL}/withdraw`,
+                            {
+                                uid: user.uid,
+                                amount,
+                            }
+                        );
+
+                        expect(response.status).to.equal(200);
+                        expect(response.data.message).to.equal(
+                            "Withdrawal successful"
                         );
                     }
                 });
@@ -120,6 +147,36 @@ describe("API Tests", () => {
                 expect(error.response.status).to.equal(400);
                 expect(error.response.data.error).to.equal(
                     "Amount must be greater than 0"
+                );
+            }
+        });
+
+        test("should reject negative withdrawal amount", async () => {
+            try {
+                await axios.post(`${API_URL}/withdraw`, {
+                    uid: "user1",
+                    amount: -50,
+                });
+                throw new Error("Should have failed");
+            } catch (error: any) {
+                expect(error.response.status).to.equal(400);
+                expect(error.response.data.error).to.equal(
+                    "Amount must be greater than 0"
+                );
+            }
+        });
+
+        test("should reject withdrawal when insufficient balance", async () => {
+            try {
+                await axios.post(`${API_URL}/withdraw`, {
+                    uid: "user1",
+                    amount: 1000000, // large amount
+                });
+                throw new Error("Should have failed");
+            } catch (error: any) {
+                expect(error.response.status).to.equal(400);
+                expect(error.response.data.error).to.equal(
+                    "Insufficient balance"
                 );
             }
         });

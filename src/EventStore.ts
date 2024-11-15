@@ -1,8 +1,8 @@
 // src/escqrs/EventStore.ts
 
 import { Pool } from "pg";
-import { CreditGrantedEvent } from "./CreditGrantedEvent";
 import { config } from "dotenv";
+import { Event } from "./Event";
 
 config();
 
@@ -58,12 +58,12 @@ export class EventStore {
         await pool.query(query);
     }
 
-    static async save(event: CreditGrantedEvent): Promise<void> {
+    static async save(event: Event): Promise<void> {
         await this.ensureTableExists();
 
         const client = await pool.connect();
         try {
-            await client.query('BEGIN');
+            await client.query("BEGIN");
 
             // Get the current version for this aggregate
             const versionQuery = `
@@ -85,15 +85,15 @@ export class EventStore {
                 uid,
                 event.constructor.name,
                 nextVersion,
-                JSON.stringify(payloadWithoutMetadata)
+                JSON.stringify(payloadWithoutMetadata),
             ];
 
             await client.query(query, values);
-            await client.query('COMMIT');
+            await client.query("COMMIT");
         } catch (error: any) {
-            await client.query('ROLLBACK');
-            if (error.constraint === 'events_uid_version_key') {
-                throw new Error('Concurrent modification detected');
+            await client.query("ROLLBACK");
+            if (error.constraint === "events_uid_version_key") {
+                throw new Error("Concurrent modification detected");
             }
             throw error;
         } finally {
@@ -103,9 +103,16 @@ export class EventStore {
 
     static async getBalanceByUid(uid: string): Promise<number> {
         const query = `
-            SELECT SUM((payload->>'amount')::numeric) AS balance
+            SELECT
+                SUM(
+                    CASE
+                        WHEN type = 'CreditGrantedEvent' THEN (payload->>'amount')::numeric
+                        WHEN type = 'WithdrawalEvent' THEN -(payload->>'amount')::numeric
+                        ELSE 0
+                    END
+                ) AS balance
             FROM events
-            WHERE uid = $1 AND type = 'CreditGrantedEvent'
+            WHERE uid = $1
         `;
         const result = await pool.query(query, [uid]);
 
