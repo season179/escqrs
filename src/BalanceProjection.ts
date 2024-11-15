@@ -1,5 +1,5 @@
 import { pool, EventStore } from "./EventStore";
-import { CreditGrantedEvent } from "./CreditGrantedEvent";
+import { CreditGrantedEvent } from "./credit-granting/CreditGrantedEvent";
 import { WithdrawalEvent } from "./WithdrawalEvent";
 
 export class BalanceProjection {

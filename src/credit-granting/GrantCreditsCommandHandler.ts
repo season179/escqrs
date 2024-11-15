@@ -1,11 +1,14 @@
 // src/commandHandlers/GrantCreditsCommandHandler.ts
 
-import { EventStore } from './EventStore'; // Event storage for persisting to PostgreSQL
-import { CreditGrantedEvent } from './CreditGrantedEvent';
-import { CreditGrantedEventHandler } from './CreditGrantedEventHandler';
+import { EventStore } from "../EventStore"; // Event storage for persisting to PostgreSQL
+import { CreditGrantedEvent } from "./CreditGrantedEvent";
+import { CreditGrantedEventHandler } from "./CreditGrantedEventHandler";
 
 export class GrantCreditsCommandHandler {
-    public async handle(command: { uid: string; amount: number }): Promise<void> {
+    public async handle(command: {
+        uid: string;
+        amount: number;
+    }): Promise<void> {
         const { uid, amount } = command;
 
         // Create the event

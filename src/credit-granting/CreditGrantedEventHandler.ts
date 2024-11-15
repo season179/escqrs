@@ -1,5 +1,5 @@
 import { CreditGrantedEvent } from "./CreditGrantedEvent";
-import { BalanceProjection } from "./BalanceProjection";
+import { BalanceProjection } from "../BalanceProjection";
 
 export class CreditGrantedEventHandler {
     public async handle(event: CreditGrantedEvent): Promise<void> {
