@@ -1,5 +1,5 @@
 import { WithdrawalEvent } from "./WithdrawalEvent";
-import { BalanceProjection } from "./BalanceProjection";
+import { BalanceProjection } from "../BalanceProjection";
 
 export class WithdrawalEventHandler {
     public async handle(event: WithdrawalEvent): Promise<void> {

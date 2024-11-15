@@ -1,4 +1,4 @@
-import { EventStore } from "./EventStore";
+import { EventStore } from "../EventStore";
 import { WithdrawalEvent } from "./WithdrawalEvent";
 import { WithdrawalEventHandler } from "./WithdrawalEventHandler";
 
